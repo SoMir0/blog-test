@@ -1,16 +1,33 @@
 <script lang="ts">
     import Header from "./Header.svelte";
+    import supabase from '$lib/db'
+    async function getData() {
+        const { data, error } = await supabase
+            .from('Posts')
+            .select()
+        if (error) throw new Error(error.message)
+        console.log(data);
+        
+        return data
+    }
 </script>
 
 <main>
     <Header />
-    {#each [0, 1, 2, 3] as cat}
-        <article>
-            <h2>Title</h2>
-            <hr>
-            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Fugiat aspernatur eveniet aliquid rem ratione laboriosam quis, illum quaerat, repellendus aut quae ea, iste ad. Fuga commodi expedita eveniet eos molestias!</p>
-        </article>
-    {/each}
+    {#await getData()}
+        <p>Fetching data...</p>
+        {:then data}
+            {#each data as post}
+                <article>
+                    <h2>{post.title}</h2>
+                    <hr>
+                    <p>{post.desc}</p>
+                </article>
+            {/each}
+        {:catch error}
+            <p>Something went wrong while fetching the data:</p>
+            <pre>{error}</pre>
+    {/await}
 </main>
 
 <style lang="scss">
